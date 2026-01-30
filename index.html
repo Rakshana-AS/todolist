@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced To-Do App</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at top, #667eea, #764ba2);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(15px);
+    border-radius: 25px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.header {
+    padding: 35px;
+    text-align: center;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+}
+
+.header h1 {
+    font-size: 2.8rem;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    background: rgba(255,255,255,0.25);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.input-section {
+    padding: 25px;
+    background: #f4f6fa;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 12px;
+}
+
+input, select {
+    padding: 14px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    outline: none;
+}
+
+input:focus, select:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.3);
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+#addTaskBtn {
+    padding: 14px 22px;
+    background: linear-gradient(135deg,#4facfe,#00f2fe);
+    color: white;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 15px;
+}
+
+.filter-btn {
+    padding: 8px 20px;
+    border-radius: 25px;
+    background: #e9ecef;
+}
+
+.filter-btn.active {
+    background: #4facfe;
+    color: white;
+}
+
+.task-list {
+    padding: 20px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 15px;
+    background: white;
+    margin-bottom: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    animation: fadeSlide 0.4s ease;
+}
+
+.task-item.dragging {
+    opacity: 0.5;
+}
+
+.task-item.completed {
+    background: #e9f9ef;
+    opacity: 0.7;
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+}
+
+.task-priority {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+}
+
+.priority-low { background: #2ed573; }
+.priority-medium { background: #ffa502; }
+.priority-high {
+    background: #ff4757;
+    animation: pulse 1.5s infinite;
+}
+
+.task-main {
+    flex: 1;
+}
+
+.task-text {
+    font-size: 17px;
+    font-weight: 500;
+}
+
+.task-meta {
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    gap: 10px;
+}
+
+.category-tag {
+    background: #4facfe;
+    color: white;
+    padding: 3px 12px;
+    border-radius: 20px;
+}
+
+.task-actions button {
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+.btn-edit { background: #ffc107; }
+.btn-delete { background: #dc3545; color: white; }
+.btn-priority { background: #17a2b8; color: white; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #777;
+}
+
+@keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,71,87,0.6); }
+    70% { box-shadow: 0 0 0 10px rgba(255,71,87,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,71,87,0); }
+}
+
+@media(max-width:768px){
+    .input-row { grid-template-columns: 1fr; }
+    .stats { flex-direction: column; gap: 10px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>🚀 Advanced To-Do</h1>
+    <p>Smart task management</p>
+</div>
+
+<div class="stats">
+    <div><span id="totalTasks" class="stat-number">0</span><br>Total</div>
+    <div><span id="pendingTasks" class="stat-number">0</span><br>Pending</div>
+    <div><span id="completedTasks" class="stat-number">0</span><br>Done</div>
+</div>
+
+<div class="input-section">
+    <div class="input-row">
+        <input id="taskInput" placeholder="Enter task">
+        <select id="taskCategory">
+            <option>Work</option>
+            <option>Personal</option>
+            <option>Health</option>
+            <option>Shopping</option>
+        </select>
+        <select id="taskPriority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+        </select>
+        <input type="date" id="taskDueDate">
+        <button id="addTaskBtn">Add</button>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="pending">Pending</button>
+    <button class="filter-btn" data-filter="completed">Completed</button>
+</div>
+
+<div class="task-list" id="taskList">
+    <div class="empty-state">🎉 Add your first task</div>
+</div>
+
+</div>
+
+<script>
+class TodoApp {
+    constructor(){
+        this.tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        this.filter = "all";
+        this.init();
+    }
+
+    init(){
+        this.cache();
+        this.bind();
+        this.render();
+    }
+
+    cache(){
+        this.taskInput = taskInput;
+        this.taskCategory = taskCategory;
+        this.taskPriority = taskPriority;
+        this.taskDueDate = taskDueDate;
+        this.taskList = taskList;
+    }
+
+    bind(){
+        addTaskBtn.onclick = () => this.add();
+        document.querySelectorAll(".filter-btn").forEach(b =>
+            b.onclick = () => this.setFilter(b)
+        );
+        this.taskList.onclick = e => this.handle(e);
+    }
+
+    add(){
+        if(!this.taskInput.value.trim()) return;
+        this.tasks.unshift({
+            id: Date.now(),
+            text: this.taskInput.value,
+            category: this.taskCategory.value,
+            priority: this.taskPriority.value,
+            completed: false
+        });
+        this.taskInput.value = "";
+        this.save();
+        this.render();
+    }
+
+    render(){
+        const list = this.tasks.filter(t =>
+            this.filter === "all" ||
+            (this.filter === "pending" && !t.completed) ||
+            (this.filter === "completed" && t.completed)
+        );
+
+        this.taskList.innerHTML = list.length ? list.map(t => `
+            <div class="task-item ${t.completed?'completed':''}" data-id="${t.id}">
+                <div class="task-priority priority-${t.priority}"></div>
+                <input type="checkbox" ${t.completed?'checked':''}>
+                <div class="task-main">
+                    <div class="task-text">${t.text}</div>
+                    <div class="task-meta">
+                        <span class="category-tag">${t.category}</span>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-priority">⭐</button>
+                    <button class="btn-edit">✏️</button>
+                    <button class="btn-delete">🗑</button>
+                </div>
+            </div>
+        `).join("") : `<div class="empty-state">No tasks</div>`;
+
+        this.updateStats();
+    }
+
+    handle(e){
+        const item = e.target.closest(".task-item");
+        if(!item) return;
+        const task = this.tasks.find(t => t.id == item.dataset.id);
+
+        if(e.target.type === "checkbox"){
+            task.completed = e.target.checked;
+        }
+        if(e.target.classList.contains("btn-delete")){
+            this.tasks = this.tasks.filter(t => t.id != task.id);
+        }
+        if(e.target.classList.contains("btn-priority")){
+            task.priority = task.priority === "low" ? "medium" : task.priority === "medium" ? "high" : "low";
+        }
+        this.save();
+        this.render();
+    }
+
+    setFilter(btn){
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        this.filter = btn.dataset.filter;
+        this.render();
+    }
+
+    updateStats(){
+        totalTasks.textContent = this.tasks.length;
+        pendingTasks.textContent = this.tasks.filter(t=>!t.completed).length;
+        completedTasks.textContent = this.tasks.filter(t=>t.completed).length;
+    }
+
+    save(){
+        localStorage.setItem("tasks", JSON.stringify(this.tasks));
+    }
+}
+
+new TodoApp();
+</script>
+</body>
+</html>
